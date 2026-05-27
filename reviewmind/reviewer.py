@@ -57,7 +57,13 @@ def _normalize_suggestions(raw_suggestions: Any) -> list[dict[str, Any]]:
     return suggestions
 
 
-def generate_review(diff: str, repo: str, github_token: str = "") -> list[dict[str, Any]]:
+def generate_review(
+    diff: str,
+    repo: str,
+    github_token: str = "",
+    pr_number: int = 0,
+    save_feedback_rows: bool = True,
+) -> list[dict[str, Any]]:
     """Generate AI review suggestions for a PR diff."""
     del github_token
     try:
@@ -114,8 +120,9 @@ Format exactly:
         parsed = json.loads(_strip_json_fences(content))
         suggestions = _normalize_suggestions(parsed)
 
-        for suggestion in suggestions:
-            save_feedback(repo, 0, suggestion["issue"])
+        if save_feedback_rows:
+            for suggestion in suggestions:
+                save_feedback(repo, pr_number, suggestion["issue"])
 
         return suggestions
     except (json.JSONDecodeError, KeyError, IndexError, TypeError, ValueError):
@@ -142,9 +149,9 @@ Comment 'reviewmind accept' or 'reviewmind reject' to give feedback manually.*
         fix = suggestion.get("suggestion", "")
         fix_code = suggestion.get("fix_code", "")
         blocks.append(
-            f"""**Suggestion {index} — Line {line}**
-❗ {issue}
-✅ {fix}
+            f"""**Suggestion {index} - Line {line}**
+Issue: {issue}
+Fix: {fix}
 ```python
 {fix_code}
 ```"""

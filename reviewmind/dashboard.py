@@ -117,6 +117,22 @@ HTML_TEMPLATE = """
       padding: 14px;
       font: 0.95rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
     }
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      background: var(--code);
+      color: var(--text);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font: 0.95rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      margin: 12px 16px 0 0;
+    }
     button {
       margin-top: 12px;
       border: 0;
@@ -221,7 +237,26 @@ HTML_TEMPLATE = """
   </section>
 
   <section class="card" style="margin-top:18px">
-    <h2>🔬 Try it live</h2>
+    <h2>Review a real GitHub PR</h2>
+    <div class="grid-two">
+      <div>
+        <p>Repository</p>
+        <input id="repoInput" type="text" value="{{ repo }}">
+      </div>
+      <div>
+        <p>Pull request number</p>
+        <input id="prInput" type="number" min="1" placeholder="1">
+      </div>
+    </div>
+    <label><input id="commentInput" type="checkbox" checked> Comment on the PR</label>
+    <label><input id="fixInput" type="checkbox"> Try to open a fix PR</label>
+    <br>
+    <button id="realReviewButton">Review real PR</button>
+    <div id="realReviewResults"></div>
+  </section>
+
+  <section class="card" style="margin-top:18px">
+    <h2>Review pasted diff</h2>
     <textarea id="diffInput" rows="10" placeholder="Paste any Python diff here and click Review..."></textarea>
     <button id="reviewButton">Review this diff</button>
     <div id="reviewResults"></div>
@@ -293,6 +328,40 @@ document.getElementById('reviewButton').addEventListener('click', async () => {
     results.innerHTML = '<p style="color:#fca5a5">Review failed. Please try again.</p>';
   }
 });
+
+document.getElementById('realReviewButton').addEventListener('click', async () => {
+  const results = document.getElementById('realReviewResults');
+  results.innerHTML = '<p class="placeholder">Fetching PR, reviewing with OpenAI, and saving results...</p>';
+  try {
+    const response = await fetch('/review-pr', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        repo: document.getElementById('repoInput').value,
+        pr_number: Number(document.getElementById('prInput').value),
+        comment: document.getElementById('commentInput').checked,
+        create_fix_pr: document.getElementById('fixInput').checked
+      })
+    });
+    const payload = await response.json();
+    if (!response.ok || payload.error) throw new Error(payload.error || 'Request failed');
+    const fixLink = payload.fix_pr_url ? `<p><a style="color:#22c55e" href="${payload.fix_pr_url}" target="_blank">Fix PR opened</a></p>` : '';
+    results.innerHTML = `
+      <p>Reviewed ${payload.repo} PR #${payload.pr_number}. ${payload.commented ? 'Comment posted.' : 'Comment skipped.'}</p>
+      ${fixLink}
+      ${payload.suggestions.map(item => `
+        <div class="suggestion">
+          <div class="badge">Line ${item.line}</div>
+          <div><strong>${item.issue}</strong></div>
+          <p>${item.suggestion}</p>
+          <pre>${item.fix_code}</pre>
+        </div>
+      `).join('')}
+    `;
+  } catch (error) {
+    results.innerHTML = `<p style="color:#fca5a5">${error.message}</p>`;
+  }
+});
 </script>
 </body>
 </html>
@@ -331,7 +400,7 @@ def demo_review():
         data = request.get_json(silent=True) or {}
         diff = str(data.get("diff", ""))
         repo = str(data.get("repo", "demo/reviewmind-test"))
-        return jsonify(generate_review(diff, repo))
+        return jsonify(generate_review(diff, repo, save_feedback_rows=False))
     except Exception:
         logger.exception("Demo review failed")
         return jsonify([]), 200

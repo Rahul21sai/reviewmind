@@ -11,7 +11,7 @@ import threading
 from flask import Flask, jsonify, request
 from github import Github
 
-from reviewmind.config import GITHUB_TOKEN, GITHUB_WEBHOOK_SECRET, MODEL, PORT
+from reviewmind.config import GITHUB_TOKEN, GITHUB_WEBHOOK_SECRET, MODEL, OPENAI_API_KEY, PORT
 from reviewmind.dashboard import dashboard_bp
 from reviewmind.db import init_db, save_review
 from reviewmind.feedback import handle_issue_comment, handle_pr_closed
@@ -48,6 +48,23 @@ def _start_thread(target, args: tuple) -> None:
         logger.exception("Failed to start background thread")
 
 
+def _get_pr_diff(repo_name: str, pr_number: int) -> tuple[object, object, str] | None:
+    """Fetch a pull request and return its repo, PR object, and combined diff."""
+    try:
+        g = Github(GITHUB_TOKEN)
+        repo = g.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        files = pr.get_files()
+        diff = "\n".join(
+            f"diff --git a/{file.filename} b/{file.filename}\n{file.patch or ''}"
+            for file in files
+        )
+        return repo, pr, diff
+    except Exception:
+        logger.exception("Failed to fetch PR diff for %s PR #%s", repo_name, pr_number)
+        return None
+
+
 @app.post("/webhook")
 def webhook():
     """Receive GitHub webhook events and dispatch background work."""
@@ -80,16 +97,12 @@ def run_review(payload: dict) -> None:
         repo_name = payload["repository"]["full_name"]
         pr_number = int(payload["pull_request"]["number"])
 
-        g = Github(GITHUB_TOKEN)
-        repo = g.get_repo(repo_name)
-        pr = repo.get_pull(pr_number)
-        files = pr.get_files()
-        diff = "\n".join(
-            f"diff --git a/{file.filename} b/{file.filename}\n{file.patch or ''}"
-            for file in files
-        )
+        pr_data = _get_pr_diff(repo_name, pr_number)
+        if pr_data is None:
+            return None
+        _, pr, diff = pr_data
 
-        suggestions = generate_review(diff, repo_name, GITHUB_TOKEN)
+        suggestions = generate_review(diff, repo_name, GITHUB_TOKEN, pr_number=pr_number)
         if not suggestions:
             return None
 
@@ -116,6 +129,64 @@ def run_review(payload: dict) -> None:
 def health():
     """Return a basic application health response."""
     return jsonify({"status": "ok", "model": MODEL, "version": "2.0"})
+
+
+@app.post("/review-pr")
+def review_pr():
+    """Review a real GitHub pull request from the dashboard."""
+    try:
+        if not GITHUB_TOKEN:
+            return jsonify({"error": "GITHUB_TOKEN is not configured"}), 400
+        if not OPENAI_API_KEY or OPENAI_API_KEY.lower() == "mock":
+            return jsonify({"error": "OPENAI_API_KEY is not configured"}), 400
+
+        data = request.get_json(silent=True) or {}
+        repo_name = str(data.get("repo", "")).strip()
+        pr_number = int(data.get("pr_number", 0))
+        should_comment = bool(data.get("comment", True))
+        should_create_fix = bool(data.get("create_fix_pr", False))
+
+        if not repo_name or pr_number <= 0:
+            return jsonify({"error": "repo and pr_number are required"}), 400
+
+        pr_data = _get_pr_diff(repo_name, pr_number)
+        if pr_data is None:
+            return jsonify({"error": "Could not fetch pull request diff"}), 502
+        _, pr, diff = pr_data
+
+        suggestions = generate_review(diff, repo_name, GITHUB_TOKEN, pr_number=pr_number)
+        if not suggestions:
+            return jsonify({"error": "No suggestions returned", "suggestions": []}), 200
+
+        if should_comment:
+            try:
+                pr.create_issue_comment(format_suggestions_as_comment(suggestions))
+            except Exception:
+                logger.exception("Failed to comment on PR %s#%s", repo_name, pr_number)
+
+        fix_url = None
+        if should_create_fix:
+            fix_url = create_fix_pr(repo_name, pr_number, suggestions, diff, GITHUB_TOKEN)
+
+        save_review(
+            repo_name,
+            pr_number,
+            diff,
+            json.dumps(suggestions),
+            fix_branch=f"reviewmind/fix-pr-{pr_number}" if fix_url else None,
+        )
+        return jsonify(
+            {
+                "repo": repo_name,
+                "pr_number": pr_number,
+                "suggestions": suggestions,
+                "commented": should_comment,
+                "fix_pr_url": fix_url,
+            }
+        )
+    except Exception:
+        logger.exception("Failed to review real pull request")
+        return jsonify({"error": "Review failed"}), 500
 
 
 if __name__ == "__main__":
