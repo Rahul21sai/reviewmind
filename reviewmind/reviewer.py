@@ -1,13 +1,12 @@
-"""AI review generation and GitHub comment formatting."""
+"""AI review generation using OpenAI Structured Outputs and GitHub comment formatting."""
 
 from __future__ import annotations
 
-import json
 import logging
-import re
 from typing import Any
 
 from openai import OpenAI
+from pydantic import BaseModel, Field
 
 from reviewmind.config import MAX_SUGGESTIONS, MODEL, OPENAI_API_KEY
 from reviewmind.db import get_accepted_patterns, get_rejected_patterns, save_feedback
@@ -16,12 +15,19 @@ from reviewmind.db import get_accepted_patterns, get_rejected_patterns, save_fee
 logger = logging.getLogger(__name__)
 
 
-def _strip_json_fences(content: str) -> str:
-    """Remove markdown code fences from a model response."""
-    stripped = content.strip()
-    stripped = re.sub(r"^```(?:json)?\s*", "", stripped, flags=re.IGNORECASE)
-    stripped = re.sub(r"\s*```$", "", stripped)
-    return stripped.strip()
+class Suggestion(BaseModel):
+    """Pydantic model representing a single code review suggestion."""
+    line: int = Field(description="The 1-indexed line number in the diff where the issue occurs.")
+    issue: str = Field(description="One-sentence description of the code issue.")
+    suggestion: str = Field(description="One-sentence action plan/suggestion to fix the issue.")
+    fix_code: str = Field(description="The corrected snippet of code (max 5 lines).")
+
+
+class SuggestionList(BaseModel):
+    """Pydantic schema for structured OpenAI output."""
+    suggestions: list[Suggestion] = Field(
+        description="A list of specific review suggestions for the pull request."
+    )
 
 
 def _build_pattern_section(title: str, patterns: list[str]) -> str:
@@ -33,30 +39,6 @@ def _build_pattern_section(title: str, patterns: list[str]) -> str:
     return "\n".join(lines)
 
 
-def _normalize_suggestions(raw_suggestions: Any) -> list[dict[str, Any]]:
-    """Validate model suggestions into the expected list-of-dicts shape."""
-    if not isinstance(raw_suggestions, list):
-        return []
-
-    suggestions: list[dict[str, Any]] = []
-    for item in raw_suggestions[:MAX_SUGGESTIONS]:
-        if not isinstance(item, dict):
-            continue
-        try:
-            suggestion = {
-                "line": int(item.get("line", 0)),
-                "issue": str(item.get("issue", "")).strip(),
-                "suggestion": str(item.get("suggestion", "")).strip(),
-                "fix_code": str(item.get("fix_code", "")).strip(),
-            }
-        except (TypeError, ValueError):
-            logger.exception("Invalid suggestion payload: %s", item)
-            continue
-        if suggestion["issue"] and suggestion["suggestion"]:
-            suggestions.append(suggestion)
-    return suggestions
-
-
 def generate_review(
     diff: str,
     repo: str,
@@ -64,7 +46,7 @@ def generate_review(
     pr_number: int = 0,
     save_feedback_rows: bool = True,
 ) -> list[dict[str, Any]]:
-    """Generate AI review suggestions for a PR diff."""
+    """Generate AI review suggestions for a PR diff using Structured Outputs."""
     del github_token
     try:
         accepted_patterns = get_accepted_patterns(repo, limit=10)
@@ -79,57 +61,57 @@ def generate_review(
             rejected_patterns,
         )
 
-        system_prompt = f"""You are a code reviewer for a software team.
-Review the PR diff and give 3-5 specific suggestions.
+        system_prompt = f"""You are an expert code reviewer for a software team.
+Review the pull request diff and give 3 to {MAX_SUGGESTIONS} specific suggestions.
 
 {accepted_section}
 
 {rejected_section}
 
 Rules:
-- Max 5 suggestions
-- Each suggestion: issue in one sentence, fix in one sentence
-- fix_code must be the actual corrected code (5 lines max)
-- Focus on: correctness, naming, error handling
-- Respond ONLY as valid JSON array, no markdown, no preamble
-
-Format exactly:
-[
-  {{
-    "line": 12,
-    "issue": "Variable x is ambiguous",
-    "suggestion": "Rename x to user_count",
-    "fix_code": "user_count = get_users()"
-  }}
-]"""
+- Max {MAX_SUGGESTIONS} suggestions.
+- Each suggestion: identify the issue in one concise sentence, and state the fix in one concise sentence.
+- fix_code must contain only the direct code replacement (max 5 lines).
+- Focus on correctness, code naming conventions, error handling, and performance improvements.
+"""
 
         if not OPENAI_API_KEY or OPENAI_API_KEY.lower() == "mock":
             logger.info("OpenAI API key is not configured; returning no suggestions")
             return []
 
         client = OpenAI(api_key=OPENAI_API_KEY)
-        response = client.chat.completions.create(
+        
+        # Call the beta chat completions parse API for guaranteed schema matching
+        response = client.beta.chat.completions.parse(
             model=MODEL,
-            max_tokens=1000,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": diff},
             ],
+            response_format=SuggestionList,
         )
-        content = response.choices[0].message.content or "[]"
-        parsed = json.loads(_strip_json_fences(content))
-        suggestions = _normalize_suggestions(parsed)
+        
+        parsed_output = response.choices[0].message.parsed
+        if not parsed_output or not parsed_output.suggestions:
+            logger.warning("No suggestions successfully parsed from OpenAI response")
+            return []
+
+        suggestions: list[dict[str, Any]] = []
+        for item in parsed_output.suggestions[:MAX_SUGGESTIONS]:
+            suggestions.append({
+                "line": item.line,
+                "issue": item.issue.strip(),
+                "suggestion": item.suggestion.strip(),
+                "fix_code": item.fix_code.strip(),
+            })
 
         if save_feedback_rows:
             for suggestion in suggestions:
                 save_feedback(repo, pr_number, suggestion["issue"])
 
         return suggestions
-    except (json.JSONDecodeError, KeyError, IndexError, TypeError, ValueError):
-        logger.exception("Failed to parse review suggestions for %s", repo)
-        return []
     except Exception:
-        logger.exception("Failed to generate review for %s", repo)
+        logger.exception("Failed to generate structured review for %s", repo)
         return []
 
 
