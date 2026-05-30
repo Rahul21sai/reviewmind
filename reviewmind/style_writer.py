@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from datetime import date
 
-from github import Github, GithubException
+from github import Auth, Github, GithubException
 from openai import OpenAI
 
 from reviewmind.config import (
@@ -130,7 +130,7 @@ def check_and_generate_style(repo_name: str, github_token: str) -> None:
             return None
 
         try:
-            g = Github(token)
+            g = Github(auth=Auth.Token(token))
             repo = g.get_repo(repo_name)
             message = (
                 f"docs: update TEAM_STYLE.md via ReviewMind "

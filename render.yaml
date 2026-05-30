@@ -3,7 +3,7 @@ services:
     name: reviewmind
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python -m reviewmind.app
+    startCommand: gunicorn reviewmind.app:app --bind 0.0.0.0:$PORT
     plan: free
     envVars:
       - key: PORT

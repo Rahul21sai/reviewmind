@@ -283,6 +283,27 @@ def get_all_feedback(repo: str) -> list[dict[str, Any]]:
         return []
 
 
+def get_recent_feedback(repo: str, limit: int = 15) -> list[dict[str, Any]]:
+    """Return recent feedback rows for the dashboard learning timeline."""
+    try:
+        with DBContext() as db:
+            rows = db.execute(
+                """
+                SELECT id, repo, pr_number, suggestion_text, accepted,
+                       fix_pr_merged, timestamp
+                FROM feedback
+                WHERE repo = ?
+                ORDER BY timestamp DESC, id DESC
+                LIMIT ?
+                """,
+                (repo, limit),
+            ).fetchall()
+            return [dict(row) for row in rows]
+    except Exception:
+        logger.exception("Failed to fetch recent feedback for %s", repo)
+        return []
+
+
 def get_feedback_count(repo: str) -> int:
     """Return the total feedback count for a repository."""
     try:

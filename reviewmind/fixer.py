@@ -6,7 +6,7 @@ import logging
 import re
 from typing import Any
 
-from github import Github
+from github import Auth, Github
 
 from reviewmind.config import FIX_BRANCH_PREFIX
 
@@ -83,7 +83,7 @@ def create_fix_pr(
 ) -> str | None:
     """Create a GitHub PR containing simple automated fixes."""
     try:
-        g = Github(github_token)
+        g = Github(auth=Auth.Token(github_token))
         repo = g.get_repo(repo_name)
         original_pr = repo.get_pull(pr_number)
         base_branch = original_pr.base.ref

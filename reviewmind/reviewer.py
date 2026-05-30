@@ -39,6 +39,32 @@ def _build_pattern_section(title: str, patterns: list[str]) -> str:
     return "\n".join(lines)
 
 
+# Keywords used to classify suggestion risk level
+_HIGH_RISK_KEYWORDS = {
+    "security", "injection", "exception", "crash", "data loss", "auth",
+    "secret", "password", "credential", "vulnerability", "sql injection",
+    "xss", "csrf", "privilege", "overflow", "leak",
+}
+_MEDIUM_RISK_KEYWORDS = {
+    "error handling", "validation", "edge case", "null", "missing check",
+    "undefined", "unhandled", "timeout", "race condition", "concurrency",
+    "type error", "assertion", "boundary",
+}
+
+
+def classify_risk(text: str) -> str:
+    """Classify a suggestion's risk level based on keyword matching.
+
+    Returns 'High', 'Medium', or 'Low'.
+    """
+    lower = text.lower()
+    if any(kw in lower for kw in _HIGH_RISK_KEYWORDS):
+        return "High"
+    if any(kw in lower for kw in _MEDIUM_RISK_KEYWORDS):
+        return "Medium"
+    return "Low"
+
+
 def generate_review(
     diff: str,
     repo: str,
@@ -98,11 +124,13 @@ Rules:
 
         suggestions: list[dict[str, Any]] = []
         for item in parsed_output.suggestions[:MAX_SUGGESTIONS]:
+            issue_text = item.issue.strip()
             suggestions.append({
                 "line": item.line,
-                "issue": item.issue.strip(),
+                "issue": issue_text,
                 "suggestion": item.suggestion.strip(),
                 "fix_code": item.fix_code.strip(),
+                "risk": classify_risk(issue_text),
             })
 
         if save_feedback_rows:
