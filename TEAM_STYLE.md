@@ -9,32 +9,29 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- Write unit tests, especially for helper functions.
-- Leverage design patterns when applicable.
-- Break functions into smaller, manageable pieces.
-- Add documentation to modules to enhance clarity.
-- Include inline comments for complex lines.
-- Implement logging before and after critical operations.
-- Validate inputs before writing to the database.
-- Replace magic numbers with named constants for clarity.
-- Use parameterised queries to guard against SQL injection.
-- Provide specific exception handling around API calls.
-- Use descriptive variable names instead of single letters.
+- **Unit Testing**: Add unit tests for helper functions.
+- **Design Patterns**: Consider using design patterns where applicable.
+- **Function Complexity**: Break functions into smaller, manageable pieces.
+- **Documentation**: Enhance module documentation and add inline comments for clarity.
+- **Logging**: Implement logging before and after critical operations to track flow.
+- **Input Validation**: Validate inputs before any database write actions.
+- **Magic Numbers**: Replace magic numbers with named constants for better readability.
+- **Database Security**: Use parameterized queries to prevent SQL injection vulnerabilities.
+- **Exception Handling**: Implement specific exception handling around API calls.
+- **Descriptive Naming**: Use descriptive variable names instead of single-letter names.
 
 ## What we ignore
-- Add type hints to every local variable.
-- Extract repeated logic into helper functions.
-- Use enumerate instead of manual index tracking.
-- Add guard clauses to reduce nesting depth.
-- Prefer `pathlib.Path` over `os.path` for file operations.
-- Use f-strings instead of string concatenation.
-- Add type hints to public function signatures.
-- Return structured JSON errors from API endpoints.
+- **Type Hints**: Do not add type hints to every local variable or public function signatures.
+- **Logic Extraction**: Avoid extracting repeated logic into helper functions unless necessary.
+- **Enumerate Usage**: Do not replace manual index tracking with `enumerate()` where clarity is valued.
+- **Guard Clauses**: Avoid using guard clauses to reduce nesting depth.
+- **File Operations**: Do not prefer `pathlib.Path` over `os.path` for file manipulations.
+- **String Formatting**: Refrain from using f-strings instead of traditional string concatenation.
+- **Structured Errors**: Avoid returning structured JSON errors from API endpoints.
 
 ## Naming conventions
-- Use descriptive names for variables and functions.
-- Avoid single-letter variable names unless in short loops.
+- Use clear, descriptive variable names that reflect their purpose and content.
 
 ## Error handling
-- Implement specific exception handling, particularly for external API calls.
-- Ensure proper input validation to prevent errors at runtime.
+- Emphasize specific exception handling for robust API communications. 
+- Implement logging to capture context around errors, facilitating easier debugging.
