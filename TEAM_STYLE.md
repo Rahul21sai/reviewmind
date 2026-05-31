@@ -9,32 +9,32 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- **Testing**: Always add unit tests for helper functions.
-- **Design Patterns**: Consider applying relevant design patterns where applicable.
-- **Type Hints**: Include type hints for every local variable to enhance code clarity.
-- **Function Decomposition**: Break larger functions into smaller, more manageable pieces.
-- **Documentation**: Add comprehensive documentation for modules and functions.
-- **Inline Comments**: Provide inline comments to explain complex or non-intuitive lines of code.
-- **Logging**: Implement logging before and after critical operations for better traceability.
-- **Input Validation**: Ensure input validation occurs prior to database writes to maintain data integrity.
+- **Unit Testing**: Always add unit tests for helper functions.
+- **Design Patterns**: Consider using design patterns where appropriate.
+- **Type Hints**: Add type hints to every local variable for better readability and type safety.
+- **Function Decomposition**: Break large functions into smaller, manageable pieces.
+- **Documentation**: Provide thorough documentation for modules and functions.
+- **Inline Comments**: Include inline comments to clarify complex lines of code.
+- **Logging**: Add logging before and after critical operations to trace execution flow.
+- **Input Validation**: Perform input validation before writing to databases.
 - **Magic Numbers**: Replace magic numbers with named constants for clarity.
-- **Database Security**: Use parameterised queries to safeguard against SQL injection risks.
-- **API Exception Handling**: Surround API calls with specific exception handling to manage failures gracefully.
+- **SQL Injection Prevention**: Use parameterized queries to ensure security against SQL injection.
+- **Exception Handling**: Implement specific exception handling around API calls.
 
 ## What we ignore
-- **Confusing Comments**: Avoid comments that may create confusion, particularly in sensitive configurations like GITHUB_WEBHOOK_SECRET.
-- **Refactoring**: Do not extract repeated logic into helper functions without significant justification.
-- **Index Management**: For loops, prefer manual index tracking over using `enumerate`.
-- **Nesting**: Avoid adding guard clauses solely for reducing nesting depth.
-- **File Operations**: Use `os.path` over `pathlib.Path` for file operations.
-- **String Formatting**: Refrain from using f-strings; string concatenation is preferred.
-- **Public Function Annotations**: Avoid adding type hints to public function signatures.
+- **Confusing Comments**: Avoid comments that could lead to confusion, such as those at the end of sensitive values.
+- **Repeated Logic Extraction**: Do not extract repeated logic into helper functions unnecessarily.
+- **Manual Indexing**: Reject using `enumerate` instead of manual index tracking where contextually appropriate.
+- **Guard Clauses**: Do not focus on guard clauses for reducing nesting depth.
+- **Path Management**: Avoid favoring `pathlib.Path` over `os.path` without strong justification.
+- **String Formatting**: Do not prioritize using f-strings over string concatenation without clarity on readability impact.
+- **Public Function Type Hints**: Avoid adding type hints to public function signatures unless absolutely necessary.
 
 ## Naming conventions
-- Use descriptive names that convey the purpose of the variable or function.
-- Follow `snake_case` for variable names and function definitions.
-- Use `CamelCase` for class names.
+- Use clear, descriptive names for variables and functions.
+- Follow consistent casing conventions (e.g., camelCase for functions, snake_case for variables).
 
 ## Error handling
-- Implement specific exception handling for anticipated errors.
-- Log errors appropriately for visibility and troubleshooting.
+- Use specific exceptions for error management.
+- Avoid overly broad exception handling.
+- Always log errors for easier debugging and tracking issues.
