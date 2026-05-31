@@ -9,32 +9,34 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- Consider using a design pattern where applicable.
+- Use design patterns where applicable.
 - Break functions into smaller, manageable pieces.
-- Add inline comments to clarify complex lines.
+- Provide inline comments to clarify complex lines of code.
 - Implement logging before and after critical operations.
-- Extract repeated logic into helper functions for better maintainability.
-- Use `enumerate` instead of manual index tracking for loops.
+- Extract repeated logic into helper functions.
+- Utilize `enumerate` for iterating with index tracking.
 - Add guard clauses to minimize nesting depth.
-- Prefer `pathlib.Path` over `os.path` for file operations to enhance readability.
-- Use f-strings instead of string concatenation for better performance and clarity.
-- Return structured JSON errors from API endpoints to standardize error handling.
-- Utilize context managers for file and database operations to ensure proper resource management.
-- Validate inputs before database writes to enhance security and data integrity.
-- Replace magic numbers with named constants for better code clarity.
+- Prefer `pathlib.Path` over `os.path` for file interactions.
+- Use f-strings for string formatting instead of concatenation.
+- Return structured JSON errors from API endpoints.
+- Employ context managers for file and database operations.
+- Validate inputs before writing to the database.
+- Replace magic numbers with named constants.
 - Use parameterized queries to prevent SQL injection vulnerabilities.
-- Surround API calls with specific exception handling to manage potential errors effectively.
+- Implement specific exception handling around API calls.
 
 ## What we ignore
-- Adding unit tests for already established helper functions is not prioritized.
-- Type hints for every local variable are not required.
-- Adding extensive documentation for each module is deemed unnecessary.
-- Type hints for public function signatures are not emphasized.
+- Adding unit tests for helper functions is not prioritized.
+- Type hints on every local variable are not required.
+- More documentation for modules is not essential.
+- Type hints on public function signatures are not mandatory.
 
 ## Naming conventions
-- Use clear, descriptive names that accurately reflect the purpose of variables and functions.
-- Follow consistent casing conventions; prefer `snake_case` for variables and functions, and `CamelCase` for classes.
+- Use descriptive and meaningful names for variables, functions, and classes.
+- Prefer snake_case for variable and function names.
+- Use CamelCase for class names.
 
 ## Error handling
-- Prioritize specific exception handling to gracefully manage errors, especially in API integrations.
-- Ensure all error responses provide meaningful and structured feedback to the API consumers.
+- Handle exceptions clearly and specifically, particularly for API calls.
+- Ensure errors are logged appropriately to facilitate debugging.
+- Use structured error responses to provide clear feedback to API consumers.
