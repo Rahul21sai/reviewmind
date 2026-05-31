@@ -44,7 +44,7 @@ class DBContext:
                 self.conn = psycopg2.connect(DATABASE_URL)
                 self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
             else:
-                self.conn = sqlite3.connect(DB_PATH)
+                self.conn = sqlite3.connect(DB_PATH, timeout=30.0)
                 self.conn.row_factory = sqlite3.Row
                 self.cursor = self.conn.cursor()
         except Exception:

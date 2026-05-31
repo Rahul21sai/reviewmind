@@ -422,6 +422,119 @@ def setup():
     return render_template_string(SETUP_HTML, checks=checks)
 
 
+# ─── Custom Error Handlers ───────────────────────────────────────
+
+ERROR_404_HTML = """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReviewMind — 404 Not Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06090f; --surface: #0d1117; --card: rgba(22, 27, 34, 0.8);
+      --border: rgba(48, 54, 61, 0.6); --text: #e6edf3; --muted: #7d8590;
+      --accent: #3fb950;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      min-height: 100vh; background: var(--bg); color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif; display: flex;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 20px;
+    }
+    .container { max-width: 480px; }
+    .logo { font-size: 5rem; margin-bottom: 20px; }
+    h1 { font-size: 3rem; font-weight: 900; margin-bottom: 12px; }
+    p { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; line-height: 1.5; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 24px; border-radius: 8px; font-weight: 700;
+      text-decoration: none; background: var(--accent); color: #052e16;
+      transition: all 0.25s ease;
+    }
+    .btn:hover {
+      box-shadow: 0 0 20px rgba(63, 185, 80, 0.3);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🧠🔍</div>
+    <h1>404</h1>
+    <p>We searched our neural pathways, but could not find the page you were looking for.</p>
+    <a href="/" class="btn">Return Home</a>
+  </div>
+</body>
+</html>
+"""
+
+ERROR_500_HTML = """
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReviewMind — 500 Server Error</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06090f; --surface: #0d1117; --card: rgba(22, 27, 34, 0.8);
+      --border: rgba(48, 54, 61, 0.6); --text: #e6edf3; --muted: #7d8590;
+      --danger: #f85149;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      min-height: 100vh; background: var(--bg); color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif; display: flex;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 20px;
+    }
+    .container { max-width: 480px; }
+    .logo { font-size: 5rem; margin-bottom: 20px; }
+    h1 { font-size: 3rem; font-weight: 900; margin-bottom: 12px; }
+    p { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; line-height: 1.5; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 24px; border-radius: 8px; font-weight: 700;
+      text-decoration: none; background: var(--danger); color: #fff;
+      transition: all 0.25s ease;
+    }
+    .btn:hover {
+      box-shadow: 0 0 20px rgba(248, 81, 73, 0.3);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">⚡💥</div>
+    <h1>500</h1>
+    <p>A server error occurred. Our engineers have been alerted (or they would be, if we weren't a hackathon project!).</p>
+    <a href="/" class="btn">Return Home</a>
+  </div>
+</body>
+</html>
+"""
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template_string(ERROR_404_HTML), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template_string(ERROR_500_HTML), 500
+
+
 # ─── Webhook ─────────────────────────────────────────────────────
 
 @app.post("/webhook")

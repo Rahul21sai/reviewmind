@@ -152,5 +152,30 @@ class TestDemoData(unittest.TestCase):
         self.assertEqual(db.get_feedback_count("test/repo"), 20)
 
 
+class TestAppRoutes(unittest.TestCase):
+    """Tests for basic application routes and custom error handlers."""
+
+    def setUp(self) -> None:
+        from reviewmind.app import app
+        app.config["TESTING"] = True
+        self.client = app.test_client()
+
+    def test_landing_page(self) -> None:
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"ReviewMind", response.data)
+
+    def test_setup_page(self) -> None:
+        response = self.client.get("/setup")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Setup Status", response.data)
+
+    def test_404_page(self) -> None:
+        response = self.client.get("/invalid-page-for-test-404")
+        self.assertEqual(response.status_code, 404)
+        self.assertIn(b"404", response.data)
+        self.assertIn(b"neural pathways", response.data)
+
+
 if __name__ == "__main__":
     unittest.main()
