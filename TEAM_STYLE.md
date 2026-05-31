@@ -9,32 +9,32 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- **Unit Testing**: Add unit tests for all helper functions.
-- **Design Patterns**: Consider using design patterns where applicable.
+- **Unit Testing**: Always add unit tests for helper functions.
+- **Design Patterns**: Consider using established design patterns for better code structure.
 - **Type Hints**: Add type hints to every local variable for clarity.
-- **Function Decomposition**: Break larger functions into smaller pieces for better readability.
-- **Documentation**: Add thorough documentation for modules and critical sections of code.
-- **Inline Comments**: Include inline comments to clarify complex lines of code.
-- **Logging**: Implement logging before and after critical operations for better traceability.
+- **Function Decomposition**: Break larger functions into smaller, manageable pieces.
+- **Documentation**: Add comprehensive documentation for modules and complex functions.
+- **Inline Comments**: Use inline comments to explain non-obvious code lines.
+- **Logging**: Implement logging before and after critical operations.
 - **Helper Functions**: Extract repeated logic into reusable helper functions.
-- **Enumerate**: Use `enumerate` for index tracking instead of manual indexing.
-- **Path Handling**: Prefer `pathlib.Path` over `os.path` for file operations.
-- **String Formatting**: Use f-strings instead of traditional string concatenation.
-- **Input Validation**: Always validate inputs before database writes.
-- **Named Constants**: Replace magic numbers with named constants for better understanding.
-- **Parameterized Queries**: Use parameterized queries to prevent SQL injection vulnerabilities.
-- **Specific Exception Handling**: Provide specific exception handling around API calls.
+- **Enumerate**: Use `enumerate` instead of manual index tracking in loops.
+- **File Operations**: Prefer `pathlib.Path` over `os.path` for handling files.
+- **String Formatting**: Use f-strings instead of string concatenation for better readability.
+- **Input Validation**: Validate inputs thoroughly before database operations.
+- **Constants**: Replace magic numbers with named constants for better maintainability.
+- **Security**: Use parameterized queries to prevent SQL injection attacks.
+- **Exception Handling**: Implement specific exception handling around API calls to enhance robustness.
 
 ## What we ignore
-- Confusing comments, especially those near sensitive configurations (e.g., `GITHUB_WEBHOOK_SECRET` line).
-- Adding guard clauses to reduce nesting depth.
-- Type hints in public function signatures.
-- Returning structured JSON errors from API endpoints.
-- Using context managers for file and database operations.
-- Descriptive variable names over single-letter names. 
+- Comments that could confuse deployments, particularly regarding sensitive values like `GITHUB_WEBHOOK_SECRET`.
+- Suggestions to add guard clauses for reducing nesting depth; found unnecessary by the team.
+- Type hints on public function signatures; team prefers concise signature formats.
+- Recommendations to return structured JSON errors from API endpoints.
+- Use of context managers for file and database operations; team prefers explicit management.
+- Descriptive variable names over single letters; brevity is preferred for variables in specific contexts.
 
 ## Naming conventions
-- Use clear and descriptive names for variables and functions to enhance code readability.
+- Use clear and concise variable names that convey meaning but do not require excessive description.
 
 ## Error handling
-- Utilize specific exception handling frameworks for external calls and database operations to manage errors effectively.
+- Prioritize specific exception handling rather than generic catch-all approaches for better debugging and maintenance.
