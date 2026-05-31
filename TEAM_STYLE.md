@@ -10,31 +10,30 @@
 
 ## What we care about
 - Add unit tests for all helper functions.
-- Consider using design patterns where applicable.
-- Include type hints for every local variable.
-- Break complex functions into smaller, more manageable pieces.
-- Provide comprehensive documentation for modules.
-- Use inline comments to clarify complex lines of code.
-- Implement logging before and after critical operations.
-- Validate inputs before performing database writes.
-- Replace magic numbers with named constants for clarity.
-- Use parameterized queries to prevent SQL injection attacks.
-- Provide specific exception handling around API calls.
+- Consider applying design patterns where applicable.
+- Use type hints for every local variable to enhance code clarity.
+- Break functions into smaller, manageable pieces for better readability.
+- Add documentation for modules, including clear comments and explanations.
+- Include inline comments for complex or non-obvious lines of code.
+- Implement logging before and after critical operations for tracing.
+- Ensure input validation before any database write operations.
+- Replace magic numbers with named constants to clarify their purpose.
+- Utilize parameterized queries to prevent SQL injection vulnerabilities.
+- Employ specific exception handling around API calls.
 
 ## What we ignore
-- Comments that may cause confusion, particularly concerning sensitive values (e.g., GITHUB_WEBHOOK_SECRET).
-- Extracting repeated logic into helper functions.
-- Using `enumerate` for index tracking instead of manual indexing.
-- Adding guard clauses to reduce nesting depth.
-- Preferring `pathlib.Path` over `os.path` for file operations.
-- Using `f-strings` instead of string concatenation.
-- Adding type hints to public function signatures.
+- Avoid comments that could cause confusion, especially with sensitive values (e.g., GITHUB_WEBHOOK_SECRET).
+- Do not extract repeated logic into helper functions if it does not significantly enhance clarity.
+- Refrain from using `enumerate` when manual index tracking is preferred.
+- Avoid adding guard clauses that excessively reduce nesting depth without improving readability.
+- Do not prefer `pathlib.Path` over `os.path` without a strong justification based on code context.
+- Avoid using f-strings instead of string concatenation arbitrarily.
+- Do not add type hints to public function signatures if it deviates from the project's established style.
 
 ## Naming conventions
-- Use descriptive, meaningful names for all variables and functions.
-- Follow consistent casing (e.g., snake_case for variables and function names, CamelCase for classes).
+- Use clear, descriptive names for functions, variables, and constants to promote self-documenting code.
+- Stick to consistent casing conventions: snake_case for variables and functions, UPPER_CASE for constants.
 
 ## Error handling
-- Implement specific exception handling to address potential issues clearly.
-- Avoid broad exception catches that obfuscate error sources.
-- Ensure that all error messages are informative and aid in troubleshooting.
+- Implement specific and meaningful exception handling to address distinct error scenarios instead of generic exceptions.
+- Log errors with sufficient context to aid in troubleshooting and debugging efforts.
