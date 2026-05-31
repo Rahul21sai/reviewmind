@@ -9,32 +9,32 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- Add unit tests for helper functions.
-- Consider employing design patterns when applicable.
-- Break down large functions into smaller, manageable pieces.
-- Enhance documentation within modules for clarity.
-- Include inline comments for complex or unclear lines.
+- Write unit tests, especially for helper functions.
+- Leverage design patterns when applicable.
+- Break functions into smaller, manageable pieces.
+- Add documentation to modules to enhance clarity.
+- Include inline comments for complex lines.
 - Implement logging before and after critical operations.
-- Perform input validation prior to database writes.
-- Replace magic numbers with named constants.
-- Utilize parameterized queries to prevent SQL injection.
-- Add specific exception handling around API calls.
-- Use descriptive variable names instead of single-letter identifiers.
+- Validate inputs before writing to the database.
+- Replace magic numbers with named constants for clarity.
+- Use parameterised queries to guard against SQL injection.
+- Provide specific exception handling around API calls.
+- Use descriptive variable names instead of single letters.
 
 ## What we ignore
-- Type hints for every local variable are not necessary.
-- Extracting repeated logic into helper functions is not favored.
-- Using `enumerate` instead of manual index tracking is not preferred.
-- Guard clauses to reduce nesting depth are not encouraged.
-- Preferential use of `pathlib.Path` over `os.path` is not a team standard.
-- F-strings are not mandatory; string concatenation is acceptable.
-- Type hints for public function signatures are not required.
-- Returning structured JSON errors from API endpoints is not needed.
+- Add type hints to every local variable.
+- Extract repeated logic into helper functions.
+- Use enumerate instead of manual index tracking.
+- Add guard clauses to reduce nesting depth.
+- Prefer `pathlib.Path` over `os.path` for file operations.
+- Use f-strings instead of string concatenation.
+- Add type hints to public function signatures.
+- Return structured JSON errors from API endpoints.
 
 ## Naming conventions
-- Use meaningful and descriptive variable names.
-- Avoid single-letter variable names unless in concise loops.
+- Use descriptive names for variables and functions.
+- Avoid single-letter variable names unless in short loops.
 
 ## Error handling
-- Always include specific exception handling around API calls.
-- Ensure proper input validation to safeguard database integrity.
+- Implement specific exception handling, particularly for external API calls.
+- Ensure proper input validation to prevent errors at runtime.
