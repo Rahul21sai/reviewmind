@@ -9,34 +9,33 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- Add unit tests for all helper functions.
-- Consider using design patterns where applicable.
-- Include type hints for every local variable.
-- Break large functions into smaller, more digestible pieces.
-- Expand documentation across the module to clarify functionality.
-- Include inline comments for complex lines of code.
-- Implement logging before and after critical operations for traceability.
-- Extract repeated logic into dedicated helper functions.
-- Use `enumerate` instead of manual index tracking for iteration.
-- Prefer `pathlib.Path` over `os.path` for file operations.
-- Utilize f-strings over string concatenation for better readability.
-- Validate inputs before writing to the database to ensure data integrity.
-- Replace magic numbers with named constants for clarity.
-- Use parameterized queries to prevent SQL injection vulnerabilities.
-- Add specific exception handling around API calls to enhance robustness.
+- **Testing**: Add unit tests for helper functions.
+- **Design**: Consider using a design pattern where appropriate.
+- **Type Hinting**: Add type hints to every local variable.
+- **Function Decomposition**: Break functions into smaller pieces for clarity.
+- **Documentation**: Add documentation to modules and inline comments for complex lines of code.
+- **Logging**: Include logging before and after critical operations.
+- **Code Duplication**: Extract repeated logic into helper functions.
+- **Python Features**: Use `enumerate` instead of manual index tracking.
+- **File Operations**: Prefer `pathlib.Path` over `os.path`.
+- **String Formatting**: Use f-strings instead of string concatenation.
+- **Input Validation**: Validate inputs before database writes.
+- **Constants**: Replace magic numbers with named constants.
+- **SQL Safety**: Use parameterised queries to prevent SQL injection.
+- **API Robustness**: Add specific exception handling around API calls.
 
 ## What we ignore
-- Confusing comments at the end of sensitive values such as `GITHUB_WEBHOOK_SECRET`.
-- Suggestions to add guard clauses to reduce nesting depth.
-- Encouragements to provide type hints for public function signatures.
-- Recommendations to return structured JSON errors from API endpoints.
-- Urging the use of context managers for file and database operations.
-- Requests for descriptive variable names instead of single-letter names.
-
+- Comments that could lead to confusion during deployment (e.g., concerning secret values).
+- Guard clauses aimed at reducing nesting depth.
+- Type hints in public function signatures.
+- Structuring JSON errors from API endpoints.
+- Context managers for file and database operations.
+- Single-letter variable names.
+  
 ## Naming conventions
-- Use descriptive names for variables and functions to enhance code clarity.
-- Avoid overly abbreviated names; clarity should take precedence over brevity.
+- Use descriptive variable names that convey meaning.
+- Avoid single-letter variables; clarity is paramount.
 
 ## Error handling
-- Implement specific exception handling tailored to the context of API calls and critical operations.
-- Prioritize clear logging of errors to facilitate troubleshooting and debugging processes.
+- Implement specific exception handling, especially around critical operations like API calls.
+- Ensure that code anticipates potential error conditions, providing clear paths for error resolution.
