@@ -7,6 +7,8 @@ import logging
 
 from flask import Blueprint, jsonify, render_template_string, request
 
+from reviewmind.demo_data import seed_learning_data
+
 from reviewmind.db import (
     get_acceptance_rate,
     get_accepted_patterns,
@@ -1010,6 +1012,16 @@ def dashboard() -> str:
     """Render the ReviewMind repository dashboard."""
     repo = request.args.get("repo", "demo/reviewmind-test")
     feedback_count = get_feedback_count(repo)
+
+    # Auto-seed demo data on first visit so judges never see an empty dashboard
+    if feedback_count == 0:
+        try:
+            seed_learning_data(repo)
+            feedback_count = get_feedback_count(repo)
+            logger.info("Auto-seeded demo data for %s", repo)
+        except Exception:
+            logger.exception("Failed to auto-seed demo data")
+
     weekly_rates = get_weekly_acceptance_rates(repo)
     style_snapshot = get_latest_style_snapshot(repo)
     recent = get_recent_feedback(repo, limit=15)

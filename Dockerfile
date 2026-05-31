@@ -26,5 +26,5 @@ COPY . .
 # Expose the Flask server port
 EXPOSE 5000
 
-# Run the Flask app module
-CMD ["python", "-m", "reviewmind.app"]
+# Run with gunicorn for production
+CMD ["gunicorn", "reviewmind.app:app", "--bind", "0.0.0.0:5000", "--workers", "2"]

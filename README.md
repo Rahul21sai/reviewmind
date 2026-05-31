@@ -11,7 +11,7 @@
 
 **ReviewMind reviews your PRs, learns from your decisions, opens fix branches, and auto-generates your team's coding style guide.**
 
-[Live Demo](#) · [Dashboard](#how-it-works) · [Video Walkthrough](#)
+[Live Demo](https://reviewmind-cul5.onrender.com) · [Dashboard](https://reviewmind-cul5.onrender.com/dashboard?repo=Rahul21sai/reviewmind) · [Setup Status](https://reviewmind-cul5.onrender.com/setup)
 
 </div>
 
