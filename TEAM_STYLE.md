@@ -10,30 +10,31 @@
 
 ## What we care about
 - Add unit tests for helper functions.
-- Consider using appropriate design patterns.
-- Break large functions into smaller, manageable pieces.
-- Include detailed documentation for modules.
-- Provide inline comments for complex lines of code.
+- Consider employing design patterns where applicable.
+- Break functions into smaller, manageable pieces.
+- Enhance module documentation for clarity.
+- Include inline comments for complex lines of code.
 - Implement logging before and after critical operations.
 - Validate inputs prior to database writes.
-- Replace magic numbers with named constants for clarity.
+- Replace magic numbers with meaningful named constants.
 - Use parameterized queries to prevent SQL injection vulnerabilities.
-- Add specific exception handling for API calls.
+- Apply specific exception handling around API calls.
+- Utilize descriptive variable names rather than single letter identifiers.
 
 ## What we ignore
-- Avoid adding type hints to every local variable.
-- Do not extract repeated logic into helper functions unnecessarily.
-- Refrain from using `enumerate()` instead of manual index tracking.
-- Avoid using guard clauses to reduce nesting.
-- Do not prefer `pathlib.Path` over `os.path` for file operations.
-- Avoid insisting on f-strings for string concatenation.
-- Do not require type hints for public function signatures.
-- Avoid structured JSON errors in API responses.
+- Adding type hints to every local variable is not a priority.
+- Extracting repeated logic into separate helper functions is discouraged.
+- Avoid using `enumerate` for index tracking; manual indexing is preferred.
+- Guard clauses to minimize nesting depth are not favored.
+- Prefer `os.path` over `pathlib.Path` for file operations.
+- String concatenation is valid; f-strings are not mandatory.
+- Type hints for public function signatures are not prioritized.
+- Structured JSON errors from API endpoints are unnecessary.
 
 ## Naming conventions
-- Use descriptive variable names instead of single letters.
-- Ensure module and function names accurately reflect their purpose.
+- Use descriptive variable names that clearly communicate their purpose.
+- Avoid single-letter variable names unless in very limited scopes (e.g., loop indices).
 
 ## Error handling
-- Incorporate specific exception handling around all API calls.
-- Maintain consistency and clarity in error messages.
+- Provide specific exception handling for API calls.
+- Ensure robust input validation to manage unexpected data before database interactions.
