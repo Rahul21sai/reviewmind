@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReviewMind — Final Project Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --container-bg: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --text-heading: #f0f6fc;
+            --accent-primary: #58a6ff;
+            --accent-success: #3fb950;
+            --accent-warning: #d29922;
+            --accent-error: #f85149;
+            --code-bg: #090d13;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 40px;
+            background-color: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h1, h2, h3 {
+            color: var(--text-heading);
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-top: 25px;
+        }
+
+        a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            transition: text-decoration 0.2s;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        p, li {
+            font-size: 1.05rem;
+            color: var(--text-main);
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: rgba(110, 118, 129, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(56, 139, 253, 0.1);
+            color: var(--text-heading);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(110, 118, 129, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background-color: rgba(63, 185, 80, 0.15);
+            color: var(--accent-success);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .badge-error {
+            background-color: rgba(248, 81, 73, 0.15);
+            color: var(--accent-error);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .architecture-diagram {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .architecture-diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 ReviewMind — Final Project Documentation</h1>
+        <p>ReviewMind is a secure, production-ready, AI-powered PR review assistant that reads code diffs, generates smart suggestions based on team coding preferences, opens automated fix branches/PRs, and commits updated style guidelines (<code>TEAM_STYLE.md</code>) back to the repository as the team's preferences evolve.</p>
+
+        <p><strong>Repository Link:</strong> <a href="https://github.com/Rahul21sai/reviewmind" target="_blank">https://github.com/Rahul21sai/reviewmind</a></p>
+
+        <h2>🏛️ System Architecture</h2>
+        <p>ReviewMind integrates seamlessly between developer workspaces, a persistent database layer, and GitHub using Webhook triggers and REST API updates:</p>
+
+        <div class="architecture-diagram">
+            <svg viewBox="0 0 600 300" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                    .node { fill: #161b22; stroke: #30363d; stroke-width: 2; }
+                    .node-highlight { fill: #090d13; stroke: #58a6ff; stroke-width: 2; }
+                    .text-light { fill: #c9d1d9; font-size: 14px; font-family: 'Inter', sans-serif; font-weight: 500; text-anchor: middle; }
+                    .arrow { stroke: #8b949e; stroke-width: 2; fill: none; }
+                </style>
+                <!-- Nodes -->
+                <rect x="20" y="30" width="160" height="60" rx="8" class="node" />
+                <text x="100" y="65" class="text-light">GitHub Webhook</text>
+
+                <rect x="420" y="30" width="160" height="60" rx="8" class="node" />
+                <text x="500" y="65" class="text-light">Web Dashboard UI</text>
+
+                <rect x="220" y="120" width="160" height="60" rx="8" class="node-highlight" />
+                <text x="300" y="155" class="text-light">Flask App Server</text>
+
+                <rect x="20" y="210" width="160" height="60" rx="8" class="node" />
+                <text x="100" y="245" class="text-light">OpenAI GPT-4o-mini</text>
+
+                <rect x="220" y="210" width="160" height="60" rx="8" class="node" />
+                <text x="300" y="245" class="text-light">SQLite / Postgres DB</text>
+
+                <rect x="420" y="210" width="160" height="60" rx="8" class="node" />
+                <text x="500" y="245" class="text-light">GitHub REST API</text>
+
+                <!-- Arrows -->
+                <path d="M 100 90 L 100 150 L 220 150" class="arrow" marker-end="url(#arrowhead)" />
+                <path d="M 500 90 L 500 150 L 380 150" class="arrow" />
+                <path d="M 260 180 L 260 210" class="arrow" />
+                <path d="M 300 180 L 300 210" class="arrow" />
+                <path d="M 340 180 L 340 210" class="arrow" />
+                <path d="M 300 120 L 300 90 Z" class="arrow" style="display:none;" />
+                <line x1="220" y1="170" x2="150" y2="210" class="arrow" />
+                <line x1="380" y1="170" x2="450" y2="210" class="arrow" />
+            </svg>
+        </div>
+
+        <ul>
+            <li><strong>Webhook Callbacks:</strong> Instantly intercepts <code>pull_request</code> and <code>issue_comment</code> actions.</li>
+            <li><strong>Database Storage:</strong> Logs feedback stats, reviews run, and commits generated.</li>
+            <li><strong>AI Logic Loop:</strong> Structures customized reviews based on historical accepts/rejects of suggestions.</li>
+            <li><strong>Automated Commit:</strong> Dynamically commits a <code>TEAM_STYLE.md</code> file directly to the code repository when a threshold of 20 feedbacks is met.</li>
+        </ul>
+
+        <h2>📂 Complete File Structure</h2>
+        <pre><code>reviewmind/
+│   __init__.py
+│   app.py            # Main entry point, webhook dispatcher, and API routes
+│   config.py         # App configurations and startup validation logic
+│   dashboard.py      # Flask Blueprint for UI routing and demo requests
+│   db.py             # SQLite / PostgreSQL ThreadedConnectionPool layer
+│   demo_data.py      # Demo seeder for sandbox/hackathon presentations
+│   feedback.py       # GitHub webhook handlers for comments and PR merges
+│   fixer.py          # Auto-PR branch creation and code replacement routines
+│   reviewer.py       # AI prompt structuring, response validation, risk classification
+│   style_writer.py   # Style snapshot generators and TEAM_STYLE.md commits
+│
+├───templates/        # UI Jinja2 templates (separated from code logic)
+│       404.html
+│       500.html
+│       dashboard.html
+│       landing.html
+│       setup.html
+│
+tests/
+│   __init__.py
+│   test_core.py      # Suite of 32 unit tests verifying the entire system
+│
+│   .env              # Environment configurations (local-only, not committed)
+│   .env.example      # Sample configurations template
+│   .gitignore
+│   Dockerfile        # Production multi-stage Docker build
+│   final.md          # Complete project summary
+│   final.html        # Beautiful documentation page (this file)
+│   PROJECT_PROGRESS.md
+│   README.md         # Public project readme
+│   requirements.txt  # Dependencies list (gunicorn, flask, openai, PyGithub, etc.)
+│   render.yaml       # Render.com IaC deployment configuration</code></pre>
+
+        <h2>⚙️ Core Module Descriptions</h2>
+        <h3>1. Web Server &amp; API (<code>app.py</code>)</h3>
+        <p>Orchestrates Flask routing, blueprint registrations, signature validation using HMAC-SHA256, and health status probes. Houses the thread-safe in-memory rate-limiter.</p>
+
+        <h3>2. Database Persistence (<code>db.py</code>)</h3>
+        <p>Integrates PostgreSQL <code>ThreadedConnectionPool</code> alongside SQLite fallback. Handles query translating dynamically (e.g. mapping SQLite's <code>?</code> placeholders to Postgres's <code>%s</code> structure and serial keys).</p>
+
+        <h3>3. AI Reviewer (<code>reviewer.py</code>)</h3>
+        <p>Prepares prompts by injecting accepted/rejected developer styles. Uses OpenAI structured completions with automatic transient-error retry loops (exponential backoff) and applies security/risk level classifications.</p>
+
+        <h3>4. Auto-Fix PRs (<code>fixer.py</code>)</h3>
+        <p>Performs code mutations and commits code directly to a branch, publishing linked pull requests automatically.</p>
+
+        <h2>🔒 Security Hardening Controls</h2>
+        <ul>
+            <li><strong>Signature Verification:</strong> Uses HMAC-SHA256 with <code>GITHUB_WEBHOOK_SECRET</code> to authenticate webhook payloads.</li>
+            <li><strong>Input Constraints:</strong> Restricts repository parameters via regex (<code>owner/repo</code>), limits maximum diff inputs to 1MB, and validates integers.</li>
+            <li><strong>Rate Limiting:</strong> Custom in-memory decorator throttles IPs on expensive AI/GitHub commit endpoints (429 status code).</li>
+        </ul>
+
+        <h2>🛣️ API Endpoints</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Route</th>
+                    <th>Method</th>
+                    <th>Rate Limit</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>/</code></td>
+                    <td><code>GET</code></td>
+                    <td>None</td>
+                    <td>Product landing page.</td>
+                </tr>
+                <tr>
+                    <td><code>/setup</code></td>
+                    <td><code>GET</code></td>
+                    <td>None</td>
+                    <td>Deployment dashboard showing key environment checks.</td>
+                </tr>
+                <tr>
+                    <td><code>/dashboard</code></td>
+                    <td><code>GET</code></td>
+                    <td>None</td>
+                    <td>Core dashboard showing repository statistics.</td>
+                </tr>
+                <tr>
+                    <td><code>/health</code></td>
+                    <td><code>GET</code></td>
+                    <td>None</td>
+                    <td>Liveness check verifying database connection.</td>
+                </tr>
+                <tr>
+                    <td><code>/webhook</code></td>
+                    <td><code>POST</code></td>
+                    <td>None</td>
+                    <td>Receives event payloads from GitHub.</td>
+                </tr>
+                <tr>
+                    <td><code>/review-pr</code></td>
+                    <td><code>POST</code></td>
+                    <td>5 req / 60s</td>
+                    <td>Triggers live review on a target GitHub PR.</td>
+                </tr>
+                <tr>
+                    <td><code>/style-commit</code></td>
+                    <td><code>POST</code></td>
+                    <td>5 req / 60s</td>
+                    <td>Commits <code>TEAM_STYLE.md</code> to GitHub.</td>
+                </tr>
+                <tr>
+                    <td><code>/demo-review</code></td>
+                    <td><code>POST</code></td>
+                    <td>10 req / 60s</td>
+                    <td>Reviews pasted diff snippets interactively.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🧪 Verification and Test Suite</h2>
+        <p>ReviewMind is backed by <strong>32 unit tests</strong> in <code>tests/test_core.py</code> covering security validation, rate limiting, liveness status, database pool lifecycle, and OpenAI retries.</p>
+
+        <p>Run the test suite locally with:</p>
+        <pre><code>.venv\Scripts\python.exe -m unittest tests.test_core</code></pre>
+
+        <p><strong>Result:</strong></p>
+        <pre><code>Ran 32 tests in 3.192s
+
+OK <span class="badge badge-success">Passed</span></code></pre>
+
+        <h2>🚀 Running Locally &amp; Deploying</h2>
+        <h3>1. Native Local Setup</h3>
+        <pre><code># Install packages
+pip install -r requirements.txt
+
+# Launch web server
+python -m reviewmind.app</code></pre>
+
+        <h3>2. Render Cloud Deployment</h3>
+        <p>The system uses <code>render.yaml</code> for Infrastructure-as-Code deployment. Render connects to the GitHub repository and runs a Gunicorn web process:</p>
+        <pre><code>gunicorn reviewmind.app:app</code></pre>
+        <p>Requires environment settings for: <code>OPENAI_API_KEY</code>, <code>GITHUB_TOKEN</code>, <code>GITHUB_WEBHOOK_SECRET</code>, and <code>DATABASE_URL</code>.</p>
+    </div>
+</body>
+</html>
