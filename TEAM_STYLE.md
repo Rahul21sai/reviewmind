@@ -10,32 +10,30 @@
 
 ## What we care about
 - Add unit tests for helper functions.
-- Consider using design patterns for code organization.
-- Break functions into smaller, manageable pieces.
-- Enhance documentation within modules for clarity.
-- Include inline comments for clarification on complex code lines.
-- Implement logging before and after critical operations for traceability.
-- Perform input validation prior to database writes to ensure data integrity.
-- Replace magic numbers with named constants for better readability.
+- Consider using appropriate design patterns.
+- Break large functions into smaller, manageable pieces.
+- Include detailed documentation for modules.
+- Provide inline comments for complex lines of code.
+- Implement logging before and after critical operations.
+- Validate inputs prior to database writes.
+- Replace magic numbers with named constants for clarity.
 - Use parameterized queries to prevent SQL injection vulnerabilities.
-- Implement specific exception handling around API calls to manage failures effectively.
-- Use descriptive variable names instead of single letters for improved code comprehension.
+- Add specific exception handling for API calls.
 
 ## What we ignore
-- Adding type hints to every local variable.
-- Extracting repeated logic into helper functions.
-- Using `enumerate` for index tracking; manual index tracking is acceptable here.
-- Adding guard clauses to reduce nesting depth; maintain structure as necessary.
-- Preferring `pathlib.Path` over `os.path` for file operations is not emphasized.
-- Using f-strings over string concatenation is a matter of preference here.
-- Adding type hints to public function signatures is not a priority.
-- Returning structured JSON errors from API endpoints is not required.
+- Avoid adding type hints to every local variable.
+- Do not extract repeated logic into helper functions unnecessarily.
+- Refrain from using `enumerate()` instead of manual index tracking.
+- Avoid using guard clauses to reduce nesting.
+- Do not prefer `pathlib.Path` over `os.path` for file operations.
+- Avoid insisting on f-strings for string concatenation.
+- Do not require type hints for public function signatures.
+- Avoid structured JSON errors in API responses.
 
 ## Naming conventions
-- Use clear and descriptive names for variables and functions.
-- Avoid single-letter variable names unless in a loop with well-defined scope.
+- Use descriptive variable names instead of single letters.
+- Ensure module and function names accurately reflect their purpose.
 
 ## Error handling
-- Employ specific exception handling for API calls.
-- Validate inputs thoroughly before any operation that can lead to errors.
-- Log error details alongside stack traces to aid in troubleshooting.
+- Incorporate specific exception handling around all API calls.
+- Maintain consistency and clarity in error messages.
