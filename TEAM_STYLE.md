@@ -9,33 +9,33 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- Add inline comments explaining complex or critical lines of code.
-- Log before and after critical operations for better traceability.
-- Extract repeated logic into helper functions to promote DRY (Don't Repeat Yourself) principles.
-- Use `enumerate` instead of manual index tracking to improve code clarity.
-- Implement guard clauses to reduce nesting depth and enhance readability.
-- Prefer `pathlib.Path` over `os.path` for file operations for improved path handling.
-- Use f-strings for string formatting instead of concatenation for better performance and readability.
-- Add type hints to public function signatures to improve code clarity and maintainability.
+- Add inline comments explaining each critical line of code.
+- Implement logging before and after critical operations for better traceability.
+- Extract repeated logic into helper functions to promote code reusability.
+- Use `enumerate` instead of manual index tracking for clarity and efficiency.
+- Implement guard clauses to minimize nesting depth within functions.
+- Prefer `pathlib.Path` over `os.path` for file operations to enhance readability and functionality.
+- Use f-strings for string formatting instead of concatenation for cleaner syntax.
+- Include type hints in public function signatures to improve code documentation and type safety.
 - Return structured JSON errors from API endpoints for consistent error handling.
-- Utilize context managers for file and database operations to ensure proper resource management.
-- Add input validation before writing to databases to prevent data integrity issues.
-- Replace magic numbers with named constants for code clarity.
-- Use parameterized queries to prevent SQL injection risks.
-- Add specific exception handling around API calls to manage different error scenarios effectively.
-- Use descriptive variable names instead of single-letter names for better understandability.
+- Use context managers for file and database operations to ensure proper resource management.
+- Conduct input validation before database writes to maintain data integrity.
+- Replace magic numbers with named constants for better code maintainability.
+- Use parameterized queries to prevent SQL injection vulnerabilities.
+- Surround API calls with specific exception handling for robust error management.
+- Choose descriptive variable names over single letters for enhanced code readability.
 
 ## What we ignore
-- Adding unit tests for helper functions is not prioritized at this time.
-- Considering design patterns is not a current focus.
-- Adding type hints to every local variable is not required.
-- Breaking functions into smaller pieces is not presently requested.
-- Adding more documentation to modules is not a priority.
+- Adding unit tests for helper functions is not prioritized.
+- Suggestions to use design patterns will not be considered unless they directly address a specific issue.
+- Type hints are not required for every local variable.
+- Breaking functions into smaller pieces should only be done if it improves clarity.
+- Additional documentation for modules is not deemed necessary at this time.
 
 ## Naming conventions
-- Use clear, descriptive names for variables and functions.
-- Avoid single-letter variable names unless in loop constructs.
+- Use clear, descriptive variable names that convey purpose.
+- Avoid single-letter variable names except for small, loop control variables.
 
 ## Error handling
-- Ensure structured error responses in API endpoints.
-- Handle specific exceptions rather than using general `except` clauses.
+- Implement structured error responses in APIs.
+- Use specific exceptions for error handling, particularly around network and database interactions.
