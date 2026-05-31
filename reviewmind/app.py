@@ -565,7 +565,9 @@ def feedback():
             return jsonify({"error": "repo and pr_number are required"}), 400
 
         mark_pr_feedback(repo_name, pr_number, accepted=accepted)
-        check_and_generate_style(repo_name, GITHUB_TOKEN)
+        # NOTE: Style guide commit is intentionally NOT triggered here.
+        # Use the explicit /style-commit route instead to avoid triggering
+        # a cascade of Render auto-deploys on every accept/reject click.
 
         return jsonify({
             "repo": repo_name,
