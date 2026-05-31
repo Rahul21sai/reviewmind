@@ -157,8 +157,19 @@ class TestAppRoutes(unittest.TestCase):
 
     def setUp(self) -> None:
         from reviewmind.app import app
+        from reviewmind.app import _rate_limits as app_rate_limits
+        from reviewmind.dashboard import _rate_limits as dashboard_rate_limits
         app.config["TESTING"] = True
         self.client = app.test_client()
+        # Reset rate limiter history to avoid cross-test contamination
+        app_rate_limits.clear()
+        dashboard_rate_limits.clear()
+
+    def tearDown(self) -> None:
+        from reviewmind.app import _rate_limits as app_rate_limits
+        from reviewmind.dashboard import _rate_limits as dashboard_rate_limits
+        app_rate_limits.clear()
+        dashboard_rate_limits.clear()
 
     def test_landing_page(self) -> None:
         response = self.client.get("/")
@@ -175,6 +186,208 @@ class TestAppRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn(b"404", response.data)
         self.assertIn(b"neural pathways", response.data)
+
+    def test_health_check_healthy(self) -> None:
+        """Health endpoint should return 200 when database is connected."""
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(data["status"], "healthy")
+        self.assertEqual(data["database"], "connected")
+
+    def test_health_check_unhealthy(self) -> None:
+        """Health endpoint should return 503 when database connection fails."""
+        # Force DBContext failure
+        from unittest.mock import patch
+        with patch("reviewmind.db.DBContext.__enter__", side_effect=Exception("DB Failure")):
+            response = self.client.get("/health")
+            self.assertEqual(response.status_code, 503)
+            data = response.get_json()
+            self.assertEqual(data["status"], "unhealthy")
+            self.assertEqual(data["database"], "disconnected")
+
+    def test_repo_validation_on_dashboard(self) -> None:
+        """Dashboard should reject invalid repository names with a 404."""
+        response = self.client.get("/dashboard?repo=invalid-format")
+        self.assertEqual(response.status_code, 404)
+
+        response = self.client.get("/dashboard?repo=valid-owner/valid-repo")
+        self.assertEqual(response.status_code, 200)
+
+    def test_input_validation_feedback_route(self) -> None:
+        """Feedback route should enforce validation for repository and PR."""
+        # Invalid repo format
+        response = self.client.post("/feedback", json={"repo": "invalid-format", "pr_number": 1, "accepted": True})
+        self.assertEqual(response.status_code, 400)
+
+        # Invalid PR number
+        response = self.client.post("/feedback", json={"repo": "owner/repo", "pr_number": 0, "accepted": True})
+        self.assertEqual(response.status_code, 400)
+
+    def test_input_validation_review_pr_route(self) -> None:
+        """Review PR route should validate repo name format and PR number."""
+        response = self.client.post("/review-pr", json={"repo": "invalid-format", "pr_number": 1})
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post("/review-pr", json={"repo": "owner/repo", "pr_number": -5})
+        self.assertEqual(response.status_code, 400)
+
+    def test_input_validation_simulate_learning(self) -> None:
+        """Simulate learning route should validate repo name."""
+        response = self.client.post("/simulate-learning", json={"repo": "invalid-format"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_input_validation_style_preview(self) -> None:
+        """Style preview route should validate repo name."""
+        response = self.client.post("/style-preview", json={"repo": "invalid-format"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_input_validation_style_commit(self) -> None:
+        """Style commit route should validate repo name."""
+        response = self.client.post("/style-commit", json={"repo": "invalid-format"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_input_validation_demo_review(self) -> None:
+        """Demo review route should validate repo name, empty diff, and diff size limit."""
+        # Empty diff
+        response = self.client.post("/demo-review", json={"repo": "owner/repo", "diff": ""})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"cannot be empty", response.data)
+
+        # Invalid repo
+        response = self.client.post("/demo-review", json={"repo": "invalid-format", "diff": "some diff"})
+        self.assertEqual(response.status_code, 400)
+
+        # Giant diff
+        giant_diff = "a" * 1000005
+        response = self.client.post("/demo-review", json={"repo": "owner/repo", "diff": giant_diff})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"exceeds size limit", response.data)
+
+    def test_rate_limiting_demo_review(self) -> None:
+        """Rate limiter should trigger 429 Too Many Requests after limit exceeded."""
+        # The limit on /demo-review is 10 requests per 60 seconds
+        for _ in range(10):
+            response = self.client.post("/demo-review", json={"repo": "owner/repo", "diff": "dummy diff"})
+            self.assertEqual(response.status_code, 200)
+
+        # 11th request should be rate limited
+        response = self.client.post("/demo-review", json={"repo": "owner/repo", "diff": "dummy diff"})
+        self.assertEqual(response.status_code, 429)
+        data = response.get_json()
+        self.assertIn("Too many requests", data["error"])
+
+
+class TestOpenAIRetryLogic(unittest.TestCase):
+    """Tests for the retry_openai exponential backoff decorator."""
+
+    def test_retry_openai_success_after_retries(self) -> None:
+        from reviewmind.reviewer import retry_openai
+
+        calls = []
+        @retry_openai(max_retries=3, initial_delay=0.001, backoff_factor=2.0)
+        def dummy_func():
+            calls.append(1)
+            if len(calls) < 3:
+                raise Exception("Transient rate_limit error")
+            return "success"
+
+        result = dummy_func()
+        self.assertEqual(result, "success")
+        self.assertEqual(len(calls), 3)
+
+    def test_retry_openai_non_transient_failure(self) -> None:
+        from reviewmind.reviewer import retry_openai
+
+        calls = []
+        @retry_openai(max_retries=3, initial_delay=0.001, backoff_factor=2.0)
+        def dummy_func():
+            calls.append(1)
+            raise Exception("Fatal syntax error")
+
+        with self.assertRaises(Exception) as ctx:
+            dummy_func()
+        self.assertIn("Fatal syntax error", str(ctx.exception))
+        self.assertEqual(len(calls), 1)
+
+
+class TestDatabaseConnectionPool(unittest.TestCase):
+    """Tests for PostgreSQL ThreadedConnectionPool integration."""
+
+    def test_is_postgres_disabled_by_default(self) -> None:
+        self.assertFalse(db.is_postgres())
+        self.assertIsNone(db.get_pg_pool())
+
+    def test_postgres_pool_initialization(self) -> None:
+        from unittest.mock import MagicMock
+
+        old_url = db.DATABASE_URL
+        old_has = db.HAS_POSTGRES
+        old_pool_instance = db._pg_pool
+
+        db.DATABASE_URL = "postgresql://user:pass@localhost:5432/dbname"
+        db.HAS_POSTGRES = True
+        db._pg_pool = None
+
+        mock_pool_cls = MagicMock()
+        mock_pool_instance = MagicMock()
+        mock_pool_cls.return_value = mock_pool_instance
+
+        import reviewmind.db as db_mod
+        original_pool_cls = getattr(db_mod, "ThreadedConnectionPool", None)
+        db_mod.ThreadedConnectionPool = mock_pool_cls
+
+        try:
+            pool = db.get_pg_pool()
+            self.assertEqual(pool, mock_pool_instance)
+            mock_pool_cls.assert_called_once_with(1, 20, dsn=db.DATABASE_URL)
+        finally:
+            db.DATABASE_URL = old_url
+            db.HAS_POSTGRES = old_has
+            db._pg_pool = old_pool_instance
+            if original_pool_cls:
+                db_mod.ThreadedConnectionPool = original_pool_cls
+            else:
+                delattr(db_mod, "ThreadedConnectionPool")
+
+    def test_db_context_uses_postgres_pool(self) -> None:
+        from unittest.mock import MagicMock
+
+        old_url = db.DATABASE_URL
+        old_has = db.HAS_POSTGRES
+        old_pool_instance = db._pg_pool
+
+        db.DATABASE_URL = "postgresql://user:pass@localhost:5432/dbname"
+        db.HAS_POSTGRES = True
+
+        mock_pool = MagicMock()
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+
+        mock_pool.getconn.return_value = mock_conn
+        mock_conn.cursor.return_value = mock_cursor
+
+        db._pg_pool = mock_pool
+
+        try:
+            with db.DBContext() as ctx:
+                self.assertEqual(ctx.conn, mock_conn)
+                self.assertEqual(ctx.cursor, mock_cursor)
+                ctx.execute("INSERT INTO feedback (repo) VALUES (?)", ("test/repo",))
+
+            mock_pool.getconn.assert_called_once()
+            mock_conn.cursor.assert_called_once()
+            # Verify translation of ? to %s and RETURNING id
+            mock_cursor.execute.assert_called_once_with(
+                "INSERT INTO feedback (repo) VALUES (%s) RETURNING id",
+                ("test/repo",)
+            )
+            # Verify putconn was called to release the connection back to the pool
+            mock_pool.putconn.assert_called_once_with(mock_conn)
+        finally:
+            db.DATABASE_URL = old_url
+            db.HAS_POSTGRES = old_has
+            db._pg_pool = old_pool_instance
 
 
 if __name__ == "__main__":

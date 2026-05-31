@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReviewMind — Setup Status</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06090f; --surface: #0d1117; --card: rgba(22, 27, 34, 0.8);
+      --border: rgba(48, 54, 61, 0.6); --text: #e6edf3; --muted: #7d8590;
+      --accent: #3fb950; --danger: #f85149;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      min-height: 100vh; background: var(--bg); color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif; padding: 48px 20px;
+    }
+    .container { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+    .subtitle { color: var(--muted); margin-bottom: 32px; }
+    .check-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 10px;
+      backdrop-filter: blur(8px);
+    }
+    .check-label { font-weight: 600; }
+    .badge-ok {
+      padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
+      background: rgba(63, 185, 80, 0.15); color: var(--accent);
+    }
+    .badge-fail {
+      padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
+      background: rgba(248, 81, 73, 0.15); color: var(--danger);
+    }
+    .back-link {
+      display: inline-block; margin-top: 24px; color: var(--accent);
+      text-decoration: none; font-weight: 600;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ Setup Status</h1>
+    <p class="subtitle">Integration health checks for ReviewMind.</p>
+    {% for check in checks %}
+    <div class="check-row">
+      <span class="check-label">{{ check.name }}</span>
+      {% if check.ok %}
+        <span class="badge-ok">✓ Configured</span>
+      {% else %}
+        <span class="badge-fail">✗ Missing</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <a href="/" class="back-link">← Back to home</a>
+  </div>
+</body>
+</html>

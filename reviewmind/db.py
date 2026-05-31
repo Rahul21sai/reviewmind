@@ -16,9 +16,12 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
+    from psycopg2.pool import ThreadedConnectionPool
     HAS_POSTGRES = True
 except ImportError:
     HAS_POSTGRES = False
+    RealDictCursor = None
+
 
 
 def is_postgres() -> bool:
@@ -28,6 +31,25 @@ def is_postgres() -> bool:
         and HAS_POSTGRES
         and (DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://"))
     )
+
+
+_pg_pool = None
+
+
+def get_pg_pool():
+    """Retrieve or initialize the PostgreSQL ThreadedConnectionPool."""
+    global _pg_pool
+    if not is_postgres():
+        return None
+    if _pg_pool is None:
+        try:
+            logger.info("Initializing PostgreSQL ThreadedConnectionPool...")
+            # Initialize pool with min 1 and max 20 connections
+            _pg_pool = ThreadedConnectionPool(1, 20, dsn=DATABASE_URL)
+        except Exception:
+            logger.exception("Failed to initialize PostgreSQL connection pool")
+            raise
+    return _pg_pool
 
 
 class DBContext:
@@ -41,7 +63,11 @@ class DBContext:
     def __enter__(self) -> DBContext:
         try:
             if is_postgres():
-                self.conn = psycopg2.connect(DATABASE_URL)
+                pool = get_pg_pool()
+                if pool:
+                    self.conn = pool.getconn()
+                else:
+                    self.conn = psycopg2.connect(DATABASE_URL)
                 self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
             else:
                 self.conn = sqlite3.connect(DB_PATH, timeout=30.0)
@@ -63,8 +89,21 @@ class DBContext:
                 logger.exception("Database transaction commit/rollback failed")
             finally:
                 if self.cursor:
-                    self.cursor.close()
-                self.conn.close()
+                    try:
+                        self.cursor.close()
+                    except Exception:
+                        pass
+                if is_postgres():
+                    pool = get_pg_pool()
+                    if pool and self.conn:
+                        try:
+                            pool.putconn(self.conn)
+                        except Exception:
+                            logger.exception("Failed to release connection to pool")
+                    elif self.conn:
+                        self.conn.close()
+                else:
+                    self.conn.close()
 
     def execute(self, query: str, params: tuple = ()) -> DBContext:
         """Execute a query, adapting placeholders and syntax dynamic modifications."""

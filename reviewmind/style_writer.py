@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from functools import wraps
 import logging
+import time
 from datetime import date
 
 from github import Auth, Github, GithubException
@@ -25,6 +27,47 @@ from reviewmind.db import (
 
 
 logger = logging.getLogger(__name__)
+
+
+def retry_openai(max_retries=3, initial_delay=1.0, backoff_factor=2.0):
+    """Decorator to retry a function on transient OpenAI API errors with exponential backoff."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            delay = initial_delay
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    err_str = str(e).lower()
+                    is_transient = any(
+                        term in err_str
+                        for term in [
+                            "rate_limit", "rate limit", "timeout",
+                            "service_unavailable", "service unavailable",
+                            "api_error", "502", "503", "504", "connection error"
+                        ]
+                    )
+                    if is_transient and attempt < max_retries - 1:
+                        logger.warning(
+                            "Transient OpenAI error on attempt %d/%d: %s. Retrying in %.1fs...",
+                            attempt + 1, max_retries, e, delay
+                        )
+                        time.sleep(delay)
+                        delay *= backoff_factor
+                    else:
+                        raise e
+            return None
+        return wrapper
+    return decorator
+
+
+@retry_openai(max_retries=3)
+def _call_openai_completions_with_retry(client, model, messages):
+    return client.chat.completions.create(
+        model=model,
+        messages=messages,
+    )
 
 
 def _fallback_style_body(accepted: list[str], rejected: list[str]) -> str:
@@ -60,9 +103,10 @@ def build_style_markdown(
     try:
         if OPENAI_API_KEY and OPENAI_API_KEY.lower() != "mock":
             client = OpenAI(api_key=OPENAI_API_KEY)
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=[
+            response = _call_openai_completions_with_retry(
+                client,
+                MODEL,
+                [
                     {
                         "role": "system",
                         "content": (

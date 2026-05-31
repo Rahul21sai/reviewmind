@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from functools import wraps
 import logging
+import time
 from typing import Any
 
 from openai import OpenAI
@@ -13,6 +15,48 @@ from reviewmind.db import get_accepted_patterns, get_rejected_patterns, save_fee
 
 
 logger = logging.getLogger(__name__)
+
+
+def retry_openai(max_retries=3, initial_delay=1.0, backoff_factor=2.0):
+    """Decorator to retry a function on transient OpenAI API errors with exponential backoff."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            delay = initial_delay
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    err_str = str(e).lower()
+                    is_transient = any(
+                        term in err_str
+                        for term in [
+                            "rate_limit", "rate limit", "timeout",
+                            "service_unavailable", "service unavailable",
+                            "api_error", "502", "503", "504", "connection error"
+                        ]
+                    )
+                    if is_transient and attempt < max_retries - 1:
+                        logger.warning(
+                            "Transient OpenAI error on attempt %d/%d: %s. Retrying in %.1fs...",
+                            attempt + 1, max_retries, e, delay
+                        )
+                        time.sleep(delay)
+                        delay *= backoff_factor
+                    else:
+                        raise e
+            return None
+        return wrapper
+    return decorator
+
+
+@retry_openai(max_retries=3)
+def _call_openai_with_retry(client, model, messages, response_format):
+    return client.beta.chat.completions.parse(
+        model=model,
+        messages=messages,
+        response_format=response_format,
+    )
 
 
 class Suggestion(BaseModel):
@@ -107,14 +151,15 @@ Rules:
 
         client = OpenAI(api_key=OPENAI_API_KEY)
         
-        # Call the beta chat completions parse API for guaranteed schema matching
-        response = client.beta.chat.completions.parse(
-            model=MODEL,
-            messages=[
+        # Call the beta chat completions parse API with retry
+        response = _call_openai_with_retry(
+            client,
+            MODEL,
+            [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": diff},
             ],
-            response_format=SuggestionList,
+            SuggestionList,
         )
         
         parsed_output = response.choices[0].message.parsed

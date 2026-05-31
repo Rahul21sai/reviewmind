@@ -21,10 +21,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import logging
+_logger = logging.getLogger("reviewmind.config")
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GITHUB_WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET", "")
 PORT = int(os.getenv("PORT", 5000))
+
+# Startup validation
+if not OPENAI_API_KEY:
+    _logger.warning("OPENAI_API_KEY environment variable is not configured.")
+elif OPENAI_API_KEY.lower() == "mock":
+    _logger.info("OPENAI_API_KEY is configured to 'mock'. AI features will be bypassed.")
+
+if not GITHUB_TOKEN:
+    _logger.warning("GITHUB_TOKEN environment variable is not configured. GitHub API interactions will fail.")
+
+if not GITHUB_WEBHOOK_SECRET:
+    _logger.warning("GITHUB_WEBHOOK_SECRET environment variable is not configured. Webhook signature validation will fail.")
 
 MODEL = "gpt-4o-mini"
 MAX_SUGGESTIONS = 5
