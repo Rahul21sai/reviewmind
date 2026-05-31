@@ -1,359 +1,85 @@
-# ReviewMind Project Progress
+# ReviewMind Project Progress & Hardening Report
 
 ## Project Summary
 
-ReviewMind is an AI-powered GitHub PR reviewer that learns a team's coding preferences over time. It reviews pull request diffs, comments suggestions, stores feedback, tracks accepted and rejected patterns, and generates a `TEAM_STYLE.md` file once enough feedback is collected.
+ReviewMind is an AI-powered GitHub PR reviewer that learns a team's coding preferences over time. It reviews pull request diffs, comments suggestions, stores feedback, tracks accepted and rejected patterns, and automatically writes a `TEAM_STYLE.md` file once enough feedback is collected.
 
 Repository:
-
 ```text
 https://github.com/Rahul21sai/reviewmind
 ```
+
+---
 
 ## What Has Been Built
 
-### 1. Initial Python Project Setup
-
-Created the base Python project structure:
-
-```text
-reviewmind/
-  __init__.py
-.env.example
-requirements.txt
-```
-
-Added dependencies:
-
-```text
-flask>=3.0.0
-openai>=1.0.0
-PyGithub>=2.1.1
-python-dotenv>=1.0.0
-requests>=2.31.0
-```
-
-### 2. SQLite Database Layer
-
-Created `reviewmind/db.py`.
-
-It manages:
-
-- `feedback`
-- `reviews`
-- `style_snapshots`
-
-Implemented helpers for:
-
-- saving feedback
-- saving reviews
-- fetching accepted patterns
-- fetching rejected patterns
-- calculating acceptance rate
-- counting reviews and feedback
-- tracking weekly acceptance rates
-- saving generated style guide snapshots
-
-### 3. Configuration
-
-Created `reviewmind/config.py`.
-
-It loads environment variables from `.env`:
-
-```text
-OPENAI_API_KEY
-GITHUB_TOKEN
-GITHUB_WEBHOOK_SECRET
-PORT
-```
-
-Also defines project constants:
-
-```text
-MODEL = "gpt-4o-mini"
-MAX_SUGGESTIONS = 5
-MIN_FEEDBACK_FOR_STYLE = 20
-FIX_BRANCH_PREFIX = "reviewmind/fix-pr-"
-STYLE_FILE_NAME = "TEAM_STYLE.md"
-DB_PATH = "reviewmind.db"
-```
-
-### 4. AI Reviewer Logic
-
-Created `reviewmind/reviewer.py`.
-
-It:
-
-- reads accepted and rejected team patterns from SQLite
-- builds an OpenAI review prompt
-- sends PR diffs to `gpt-4o-mini`
-- parses JSON suggestions
-- saves generated feedback
-- formats suggestions as a GitHub PR comment
-
-### 5. Auto Fix PR Generator
-
-Created `reviewmind/fixer.py`.
-
-It:
-
-- connects to GitHub using PyGithub
-- creates a fix branch like `reviewmind/fix-pr-{pr_number}`
-- attempts simple code replacements
-- opens a GitHub fix PR
-- comments back on the original PR
-
-### 6. Feedback Processor
-
-Created `reviewmind/feedback.py`.
-
-It handles:
-
-- fix PR closed/merged events
-- manual comments like:
-
-```text
-reviewmind accept
-reviewmind reject
-```
-
-It updates stored feedback so ReviewMind can learn from developer decisions.
-
-### 7. TEAM_STYLE.md Generator
-
-Created `reviewmind/style_writer.py`.
-
-It:
-
-- checks when at least 20 feedback rows exist
-- gathers accepted and rejected patterns
-- calls OpenAI to generate a team style guide
-- commits `TEAM_STYLE.md` to GitHub
-- stores a local style snapshot in SQLite
-
-Generated file:
-
-```text
-TEAM_STYLE.md
-```
-
-GitHub link:
-
-```text
-https://github.com/Rahul21sai/reviewmind/blob/main/TEAM_STYLE.md
-```
-
-### 8. Flask Dashboard
-
-Created `reviewmind/dashboard.py`.
-
-Dashboard URL:
-
-```text
-http://localhost:5000/dashboard?repo=Rahul21sai/reviewmind
-```
-
-The dashboard shows:
-
-- total PRs reviewed
-- acceptance rate
-- fix PRs opened
-- fix PRs merged
-- acceptance rate chart
-- accepted patterns
-- rejected patterns
-- latest `TEAM_STYLE.md`
-- real GitHub PR review form
-- pasted diff review form
-
-### 9. Flask App And Webhook Server
-
-Created `reviewmind/app.py`.
-
-Routes:
-
-```text
-GET  /health
-GET  /dashboard?repo=owner/repo
-POST /demo-review
-POST /review-pr
-POST /webhook
-```
-
-The app can:
-
-- verify GitHub webhook signatures
-- process PR open/reopen/synchronize events
-- process issue comments
-- review a real GitHub PR from the dashboard
-- post ReviewMind comments to GitHub
-- save review history locally
-
-### 10. Demo Script
-
-Created `sample_demo.py`.
-
-It is a local demo script that:
-
-- seeds fake accepted/rejected learning patterns
-- prints mock review suggestions
-- previews what `TEAM_STYLE.md` would look like
-
-This is useful for screen recording when API keys or webhooks are not available.
-
-### 11. Real-Time MVP Flow
-
-Added a real PR review flow.
-
-From the dashboard, ReviewMind can now:
-
-1. accept a real repository name
-2. accept a real PR number
-3. fetch the PR diff from GitHub
-4. call OpenAI
-5. generate review suggestions
-6. optionally comment on the PR
-7. optionally create a fix PR
-8. save review and feedback rows
-9. update dashboard metrics
-
-Endpoint:
-
-```text
-POST /review-pr
-```
-
-### 12. GitHub Push
-
-The project was pushed to:
-
-```text
-https://github.com/Rahul21sai/reviewmind
-```
-
-Latest major pushed commit:
-
-```text
-feat: add real-time PR review MVP flow
-```
-
-## Real PR Test Completed
-
-Test PR:
-
-```text
-https://github.com/Rahul21sai/reviewmind/pull/1
-```
-
-ReviewMind successfully:
-
-- loaded `.env` keys
-- fetched the real PR diff
-- called OpenAI
-- generated a review suggestion
-- posted a ReviewMind comment on the PR
-- saved review and feedback rows into `reviewmind.db`
-
-## Learning Data Created
-
-Created 20 learning review/feedback records for:
-
-```text
-Rahul21sai/reviewmind
-```
-
-Current local dashboard data:
-
-```text
-Reviews: 22
-Feedback rows: 22
-Acceptance rate: 68%
-Fix PRs opened: 15
-Fix PRs merged: 15
-TEAM_STYLE.md generated: yes
-```
-
-## Important Security Note
-
-Real keys must only be stored in:
-
-```text
-.env
-```
-
-Never put real keys in:
-
-```text
-.env.example
-README.md
-GitHub commits
-screenshots
-videos
-```
-
-`.env.example` should contain only placeholders:
-
-```text
-OPENAI_API_KEY=sk-...
-GITHUB_TOKEN=github_pat_...
-GITHUB_WEBHOOK_SECRET=your-secret-here
-PORT=5000
-```
-
-## How To Run Locally
-
-Install dependencies:
-
+### Phase 1: Core MVP Architecture
+1. **SQLite Database Layer (`db.py`)**: Persists feedback (accepted/rejected patterns), completed reviews, and style guide snapshots. Includes helper functions to query acceptance rates, review counts, and weekly metrics.
+2. **AI Reviewer Logic (`reviewer.py`)**: Pulls accepted and rejected patterns from the database to inject into the OpenAI review prompt, instructing the model to adhere to the team's coding standards.
+3. **Auto-Fix PR Generator (`fixer.py`)**: Uses PyGithub to create branches (e.g., `reviewmind/fix-pr-{pr_number}`), perform inline code replacements, push to the remote, and open an automated fix Pull Request.
+4. **Style Guide Generator (`style_writer.py`)**: Uses OpenAI's chat completions to generate a comprehensive markdown style guide (`TEAM_STYLE.md`) from accumulated accepted/rejected developer feedback, automatically committing it to GitHub.
+5. **Interactive Web Dashboard (`dashboard.py`)**: A premium GitHub-dark-themed interface showing key metrics (PRs reviewed, acceptance rate, fix PRs opened/merged), weekly charts, a learning timeline, and tools to review PRs or seed simulated demo data.
+
+---
+
+### Phase 2: Production Hardening & Architectural Refactoring
+
+#### 🔒 1. Security Hardening
+- **Environment Variable Validation**: Added fast-failing checks in [config.py](file:///c:/Users/NagaSaiRahulVudumula/Documents/reviewmind/reviewmind/config.py) to validate that `OPENAI_API_KEY`, `GITHUB_TOKEN`, and `GITHUB_WEBHOOK_SECRET` are correctly loaded at startup.
+- **Input Sanitization & Regex Filtering**: Added strict regular expression matching for repository names (`^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$`), validated pull request numbers, and capped input diff sizes at 1MB to prevent exploit attempts and buffer issues.
+- **In-Memory Rate Limiting**: Implemented a thread-safe, client-IP-based rate limiting decorator (`@rate_limit`) to restrict incoming requests on computationally intensive endpoints:
+  - `/review-pr` (5 requests per 60 seconds)
+  - `/style-commit` (5 requests per 60 seconds)
+  - `/demo-review` (10 requests per 60 seconds)
+
+#### 🚀 2. Production Readiness
+- **Database Connection Pooling**: Integrated PostgreSQL `ThreadedConnectionPool` (1 to 20 connections) in [db.py](file:///c:/Users/NagaSaiRahulVudumula/Documents/reviewmind/reviewmind/db.py). Includes dialect mapping to dynamically translate SQLite-formatted queries (`?` placeholders, serial keys, date formatting) into PostgreSQL format at runtime.
+- **Exponential Backoff OpenAI Retries**: Implemented the `@retry_openai` decorator utilizing exponential backoff delay to automatically retry requests upon encountering transient OpenAI API errors (e.g., rate limits, connection drops, 502/503/504 errors).
+- **Database-Linked Health Probe**: Upgraded the `/health` endpoint to perform a liveness database test (`SELECT 1`). Returns a `503 Service Unavailable` status if the database connection fails.
+
+#### 🎨 3. Architectural Refactoring (Separation of Concerns)
+- **Modular Template Separation**: Cleaned up code files by moving all embedded HTML/CSS strings into dedicated Jinja2 templates under the `reviewmind/templates/` folder:
+  - `landing.html` — The main landing page
+  - `setup.html` — The deployment environment checker page
+  - `dashboard.html` — The interactive repository control center
+  - `404.html` — Neural-themed custom 404 page
+  - `500.html` — Custom 500 server error page
+- **Blueprint Migration**: Refactored route handlers inside [app.py](file:///c:/Users/NagaSaiRahulVudumula/Documents/reviewmind/reviewmind/app.py) and [dashboard.py](file:///c:/Users/NagaSaiRahulVudumula/Documents/reviewmind/reviewmind/dashboard.py) to use Flask's `render_template()` API rather than dynamic in-memory string parsing.
+
+---
+
+## Verification & Test Suite
+
+The test suite in [tests/test_core.py](file:///c:/Users/NagaSaiRahulVudumula/Documents/reviewmind/tests/test_core.py) was expanded from 17 tests to **32 comprehensive tests** and verifies all aspects of the application.
+
+### 🧪 Executing the Test Suite
+Run the unit tests from the workspace root:
 ```powershell
-pip install -r requirements.txt
+.venv\Scripts\python.exe -m unittest tests.test_core
 ```
 
-Run the app:
+### 📊 Verification Results (32/32 OK)
+- **Database Persistence**: Tested feedback retrieval, review logging, and PR status updates.
+- **AI Reviewer logic**: Keyword-based risk levels (High/Medium/Low) and markdown formatters.
+- **Rate Limit Decorator**: Calling rate-limited endpoints repeatedly correctly triggers a `429 Too Many Requests` code.
+- **Input Validation**: Verified that bad repo names, empty diffs, and giant files are blocked before execution.
+- **Health check db liveness**: Verified `/health` returns `200 OK` on successful db connection and `503` on mock DB failures.
+- **OpenAI API Retries**: Verified the decorator successfully retries transient exceptions and correctly escalates persistent/fatal errors.
+- **Postgres Connection Pool**: Verified connection acquisition, execution, and release back to the pool, as well as SQLite-to-Postgres placeholder query translations.
 
-```powershell
-python -m reviewmind.app
-```
+---
 
-Open dashboard:
+## Deployment & Running Locally
 
-```text
-http://localhost:5000/dashboard?repo=Rahul21sai/reviewmind
-```
-
-Run local demo:
-
-```powershell
-python sample_demo.py
-```
-
-## How To Test Real PR Review
-
-1. Create or open a GitHub PR.
-2. Start the Flask app.
-3. Open the dashboard.
-4. Enter:
-
-```text
-Repository: Rahul21sai/reviewmind
-Pull request number: 1
-```
-
-5. Keep `Comment on the PR` checked.
-6. Keep `Try to open a fix PR` unchecked for the first test.
-7. Click `Review real PR`.
-
-ReviewMind should comment on the PR and update the dashboard.
-
-## Current MVP Status
-
-ReviewMind now has a working Phase 1 MVP:
-
-- real GitHub PR review flow
-- OpenAI-powered review suggestions
-- local learning memory
-- dashboard metrics
-- GitHub PR comments
-- generated `TEAM_STYLE.md`
-- demo script for backup recording
-
-This is ready to show as a hackathon Phase 1 working MVP.
+1. **Install dependencies**:
+   ```powershell
+   pip install -r requirements.txt
+   ```
+2. **Run Flask Application**:
+   ```powershell
+   python -m reviewmind.app
+   ```
+3. **Run tests**:
+   ```powershell
+   python -m unittest tests.test_core
+   ```
