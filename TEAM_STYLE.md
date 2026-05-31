@@ -9,31 +9,32 @@
 # TEAM_STYLE.md
 
 ## What we care about
-- **Testing**: Add unit tests for helper functions to ensure robustness.
-- **Design Patterns**: Consider using design patterns where applicable to enhance code structure.
-- **Type Hints**: Add type hints to every local variable to improve readability and maintainability.
-- **Modularity**: Break down large functions into smaller, more manageable pieces.
-- **Documentation**: Add more documentation to modules to aid understanding.
-- **Inline Comments**: Provide inline comments to explain complex or unclear lines of code.
-- **Logging**: Implement logging before and after critical operations for better traceability.
-- **Input Validation**: Validate inputs before writing to the database.
-- **Constants**: Replace magic numbers with named constants for clarity.
-- **SQL Security**: Use parameterized queries to prevent SQL injection vulnerabilities.
-- **Exception Handling**: Implement specific exception handling around API calls for better error management.
+- Add unit tests for all helper functions.
+- Consider using design patterns where applicable.
+- Include type hints for every local variable.
+- Break complex functions into smaller, more manageable pieces.
+- Provide comprehensive documentation for modules.
+- Use inline comments to clarify complex lines of code.
+- Implement logging before and after critical operations.
+- Validate inputs before performing database writes.
+- Replace magic numbers with named constants for clarity.
+- Use parameterized queries to prevent SQL injection attacks.
+- Provide specific exception handling around API calls.
 
 ## What we ignore
-- Confusing comments at the end of sensitive values like GITHUB_WEBHOOK_SECRET, which can lead to deployment issues.
-- Suggestions to extract repeated logic into helper functions, as this practice was not favored by the team.
-- Using `enumerate` instead of manual index tracking is not a preferred approach.
-- Adding guard clauses to reduce nesting depth is discouraged.
-- Preferring `pathlib.Path` over `os.path` is not something the team focuses on.
-- Using f-strings for string formatting is not a requirement.
-- Adding type hints to public function signatures is currently not prioritized.
+- Comments that may cause confusion, particularly concerning sensitive values (e.g., GITHUB_WEBHOOK_SECRET).
+- Extracting repeated logic into helper functions.
+- Using `enumerate` for index tracking instead of manual indexing.
+- Adding guard clauses to reduce nesting depth.
+- Preferring `pathlib.Path` over `os.path` for file operations.
+- Using `f-strings` instead of string concatenation.
+- Adding type hints to public function signatures.
 
 ## Naming conventions
-- Use descriptive names for functions and variables that clearly indicate their purpose.
-- Constants should be in uppercase with underscores separating words.
+- Use descriptive, meaningful names for all variables and functions.
+- Follow consistent casing (e.g., snake_case for variables and function names, CamelCase for classes).
 
 ## Error handling
-- Always handle exceptions specifically and avoid general catch-all statements.
-- Ensure logging is integrated into error handling to capture context when exceptions occur.
+- Implement specific exception handling to address potential issues clearly.
+- Avoid broad exception catches that obfuscate error sources.
+- Ensure that all error messages are informative and aid in troubleshooting.
